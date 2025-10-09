@@ -22,7 +22,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdio.h>
+#include <string.h>
+#include <stdarg.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -45,6 +47,8 @@ CAN_HandleTypeDef hcan;
 
 SPI_HandleTypeDef hspi1;
 
+UART_HandleTypeDef huart2;
+
 PCD_HandleTypeDef hpcd_USB_FS;
 
 /* USER CODE BEGIN PV */
@@ -54,6 +58,8 @@ CAN_RxHeaderTypeDef   RxHeader; ; /* Header containing the information of the re
 uint8_t               TxData[8] = {0};  /* Buffer of the data to send */
 uint8_t               RxData[8]; /* Buffer of the received data */
 uint32_t              TxMailbox;  /* The number of the mail box that transmitted the Tx message */
+uint8_t 			  tx;
+uint8_t 			  rx;
 
 /* USER CODE END PV */
 
@@ -63,13 +69,23 @@ static void MX_GPIO_Init(void);
 static void MX_USB_PCD_Init(void);
 static void MX_CAN_Init(void);
 static void MX_SPI1_Init(void);
+static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
-
+//  void myprintf(const char *fmt, ...);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+//  void myprintf(const char *fmt, ...){
+//	  static char buffer[256];
+//	  va_list args;
+//	  va_start(args, fmt);
+//	  vsnprintf(buffer, sizeof(buffer), fmt, args);
+//	  va_end(args);
+//
+//	  int len = strlen(buffer);
+//	  HAL_UART_Transmit(&huart2, (uint8_t*)buffer, len, -1);
+//  }
 /* USER CODE END 0 */
 
 /**
@@ -105,6 +121,7 @@ int main(void)
   MX_CAN_Init();
   MX_SPI1_Init();
   MX_FATFS_Init();
+  MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
   TxHeader.StdId = 0x123;
   TxHeader.RTR = CAN_RTR_DATA;
@@ -116,6 +133,132 @@ int main(void)
   }
 //  TxData[0] = 0;
 //  TxData[7] = 0xFF;
+
+  //for UART:
+//  myprintf("\r\n~ SD card demo ~\r\n\r\n");
+
+  tx = 0xAB, rx = 0x00;
+  HAL_SPI_TransmitReceive(&hspi1, &tx, &rx, 1, 100);
+
+//  HAL_Delay(1000); // let card power up
+//
+//  uint8_t cmd0[6] = {0x40, 0,0,0,0,0x95}; // CMD0
+//  uint8_t resp = 0xFF;
+//
+//  HAL_GPIO_WritePin(SD_CS_GPIO_Port, SD_CS_Pin, GPIO_PIN_RESET); // select
+//  HAL_SPI_Transmit(&hspi1, cmd0, 6, 100);
+//
+//  // poll for response
+//  for(int i=0;i<100;i++){
+//      HAL_SPI_TransmitReceive(&hspi1, &resp, &resp, 1, 100);
+//      if((resp & 0x80)==0) break;
+//  }
+//
+//  HAL_GPIO_WritePin(SD_CS_GPIO_Port, SD_CS_Pin, GPIO_PIN_SET); // deselect
+
+  // resp == 0x01 means card is awake and ready
+
+
+  //PREVIOUS TEST
+
+//  HAL_Delay(1000);				//short delay to let SD card settle
+//
+//  FATFS FatFs;					//Fatfs handle
+//  FIL fil;						//File handle
+//  FRESULT fres;					//Result after operations
+//
+//  //mount
+//  fres = f_mount(&FatFs, "", 1);
+//  if(fres != FR_OK){
+//	  Error_Handler();
+//  }
+//
+//  fres = f_open(&fil, "test2.txt", FA_WRITE | FA_CREATE_ALWAYS);
+//  if(fres != FR_OK){
+//	  Error_Handler();
+//  }
+//
+//  UINT bytesWritten;
+//  fres = f_write(&fil, "HELLO", 5, &bytesWritten);
+//  if(fres != FR_OK || bytesWritten != 5){
+//	  Error_Handler();
+//  }
+//
+//  f_close(&fil);
+
+  //PREVIOUS PREVIOUS TEST
+  //Write something
+//
+//  //open the file system
+//  fres = f_mount(&FatFs, "", 1);	//1=mount now
+//  if(fres != FR_OK){
+//	  myprintf("f_mount error (%i)\r\n", fres);
+//	  while(1);
+//  }
+//
+//  //get some stats from the SD card
+//  DWORD free_clusters, free_sectors, total_sectors;
+//
+//  FATFS* getFreeFs;
+//
+//  fres = f_getfree("", &free_clusters, &getFreeFs);
+//  if (fres != FR_OK){
+//	  myprintf("f_getfree error (%i)\r\n", fres);
+//	  while(1);
+//  }
+//
+//  total_sectors = (getFreeFs->n_fatent - 2) * getFreeFs->csize;
+//  free_sectors = free_clusters * getFreeFs->csize;
+//
+//  myprintf("SD card stats:\r\n%10lu KiB total drive space.\r\n%10lu KiB available.\r\n", total_sectors / 2, free_sectors / 2);
+//
+//  //open file "test.txt"
+//  fres = f_open(&fil, "test.txt", FA_READ);
+//  if(fres != FR_OK){
+//	  myprintf("f_open error (%i)\r\n");
+//	  while(1);
+//  }
+//  myprintf("I was able to open 'test.txt' for reading!\r\n");
+//
+//  //read 30 bytes from "test.txt" on the SD card
+//  BYTE readBuf[30];
+//
+//  //either use f_read OR f_gets to get data out of files
+//  //f_gets is a wrapper on f_read that does some string formatting
+//  TCHAR* rres = f_gets((TCHAR*)readBuf, 30, &fil);
+//  if(rres != 0){
+//	  myprintf("Read string 'test.text' contents: %s\r\n", readBuf);
+//  }
+//  else{
+//	  myprintf("f_gets error (%i)\r\n", fres);
+//  }
+//  f_close(&fil);
+//
+//  //write a file "write.txt"
+//  fres = f_open(&fil, "write.txt", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
+//  if(fres == FR_OK){
+//	  myprintf("I was able to open 'write.txt' for writing\r\n");
+//  }
+//  else{
+//	  myprintf("f_open error (%i)\r\n", fres);
+//  }
+//
+//  //copy in a string
+//  strncpy((char*)readBuf, "a new file is made!", 20);
+//  UINT bytesWrote;
+//  fres = f_write(&fil, readBuf, 19, &bytesWrote);
+//  if (fres == FR_OK){
+//	  myprintf("Wrote %i bytes to 'write.text'!\r\n", bytesWrote);
+//  }
+//  else{
+//	  myprintf("f_write error (%i)\r\n");
+//  }
+//
+//  f_close(&fil);
+//
+//  //de-mount the drive
+//  f_mount(NULL, "", 0);
+
 
   /* USER CODE END 2 */
 
@@ -140,7 +283,6 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-
 
   }
   /* USER CODE END 3 */
@@ -184,7 +326,8 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USB;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USB|RCC_PERIPHCLK_USART2;
+  PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
   PeriphClkInit.UsbClockSelection = RCC_USBCLKSOURCE_HSI48;
 
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
@@ -277,7 +420,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -291,6 +434,41 @@ static void MX_SPI1_Init(void)
   /* USER CODE BEGIN SPI1_Init 2 */
 
   /* USER CODE END SPI1_Init 2 */
+
+}
+
+/**
+  * @brief USART2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART2_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART2_Init 0 */
+
+  /* USER CODE END USART2_Init 0 */
+
+  /* USER CODE BEGIN USART2_Init 1 */
+
+  /* USER CODE END USART2_Init 1 */
+  huart2.Instance = USART2;
+  huart2.Init.BaudRate = 115200;
+  huart2.Init.WordLength = UART_WORDLENGTH_8B;
+  huart2.Init.StopBits = UART_STOPBITS_1;
+  huart2.Init.Parity = UART_PARITY_NONE;
+  huart2.Init.Mode = UART_MODE_TX_RX;
+  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart2.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  if (HAL_UART_Init(&huart2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART2_Init 2 */
+
+  /* USER CODE END USART2_Init 2 */
 
 }
 
@@ -345,23 +523,16 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(SD_CS_GPIO_Port, SD_CS_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, LCD_RS_Pin|LCD_RST_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, LCD_RS_Pin|LCD_RST_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(SD_CS_GPIO_Port, SD_CS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : Button_Pin */
   GPIO_InitStruct.Pin = Button_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(Button_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : SD_CS_Pin */
-  GPIO_InitStruct.Pin = SD_CS_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(SD_CS_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : LCD_SCL_Pin */
   GPIO_InitStruct.Pin = LCD_SCL_Pin;
@@ -385,6 +556,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : SD_CS_Pin */
+  GPIO_InitStruct.Pin = SD_CS_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(SD_CS_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI4_15_IRQn, 0, 0);

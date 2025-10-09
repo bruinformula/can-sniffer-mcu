@@ -60,14 +60,6 @@ void Error_Handler(void);
 #define Button_Pin GPIO_PIN_13
 #define Button_GPIO_Port GPIOC
 #define Button_EXTI_IRQn EXTI4_15_IRQn
-#define SD_CS_Pin GPIO_PIN_4
-#define SD_CS_GPIO_Port GPIOA
-#define SD_SCK_Pin GPIO_PIN_5
-#define SD_SCK_GPIO_Port GPIOA
-#define SD_MISO_Pin GPIO_PIN_6
-#define SD_MISO_GPIO_Port GPIOA
-#define SD_MOSI_Pin GPIO_PIN_7
-#define SD_MOSI_GPIO_Port GPIOA
 #define LCD_SCL_Pin GPIO_PIN_10
 #define LCD_SCL_GPIO_Port GPIOB
 #define LCD_CSB_Pin GPIO_PIN_12
@@ -78,9 +70,17 @@ void Error_Handler(void);
 #define LCD_RST_GPIO_Port GPIOB
 #define LCD_MOSI_Pin GPIO_PIN_15
 #define LCD_MOSI_GPIO_Port GPIOB
+#define SD_CS_Pin GPIO_PIN_15
+#define SD_CS_GPIO_Port GPIOA
+#define SD_SCK_Pin GPIO_PIN_3
+#define SD_SCK_GPIO_Port GPIOB
+#define SD_MISO_Pin GPIO_PIN_4
+#define SD_MISO_GPIO_Port GPIOB
+#define SD_MOSI_Pin GPIO_PIN_5
+#define SD_MOSI_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
-
+#define SD_SPI_HANDLE hspi1				//added for user_diskio_spi.c
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
