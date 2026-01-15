@@ -29,11 +29,18 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+struct CANmessage{
+	uint32_t Id;
+	uint8_t flags;
+	uint8_t DLC;
+	uint8_t Data[8];
+};
 
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define CANQUEUE_SIZE 128
 
 /* USER CODE END PD */
 
@@ -46,13 +53,14 @@
 CAN_HandleTypeDef hcan;
 
 SPI_HandleTypeDef hspi1;
+SPI_HandleTypeDef hspi2;
 
 UART_HandleTypeDef huart2;
 
 PCD_HandleTypeDef hpcd_USB_FS;
 
 /* USER CODE BEGIN PV */
-//uint16_t led_state = 0;
+uint16_t led_state = 0;
 CAN_TxHeaderTypeDef   TxHeader; /* Header containing the information of the transmitted frame */
 CAN_RxHeaderTypeDef   RxHeader; ; /* Header containing the information of the received frame */
 uint8_t               TxData[8] = {0};  /* Buffer of the data to send */
@@ -60,6 +68,8 @@ uint8_t               RxData[8]; /* Buffer of the received data */
 uint32_t              TxMailbox;  /* The number of the mail box that transmitted the Tx message */
 uint8_t 			  tx;
 uint8_t 			  rx;
+static struct CANmessage CANqueue[CANQUEUE_SIZE];
+static uint32_t CANqueue_write_index;
 
 /* USER CODE END PV */
 
@@ -70,6 +80,7 @@ static void MX_USB_PCD_Init(void);
 static void MX_CAN_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_SPI2_Init(void);
 /* USER CODE BEGIN PFP */
 //  void myprintf(const char *fmt, ...);
 /* USER CODE END PFP */
@@ -122,7 +133,13 @@ int main(void)
   MX_SPI1_Init();
   MX_FATFS_Init();
   MX_USART2_UART_Init();
+  MX_SPI2_Init();
   /* USER CODE BEGIN 2 */
+//  if (__HAL_CAN_GET_FLAG(&hcan, CAN_FLAG_BOF)) {
+//      HAL_CAN_DeInit(&hcan);
+//      HAL_CAN_Init(&hcan);
+//  }
+
   TxHeader.StdId = 0x123;
   TxHeader.RTR = CAN_RTR_DATA;
   TxHeader.IDE = CAN_ID_STD;
@@ -267,18 +284,21 @@ int main(void)
 
   while (1)
   {
-	  for(int i=0; i<8; i++){
-	  	  TxData[i] = (TxData[i] + (1+i)) & 0xFF;				//wraps around when reached 255
-	    }
+
+
+
+//	  for(int i=0; i<8; i++){
+//	  	  TxData[i] = (TxData[i] + (1+i)) & 0xFF;				//wraps around when reached 255
+//	    }
 //	  TxData[0] ++; 				//increment the first byte
 //	  TxData[7] --;					//increment the last byte
-
-	  //mandatory to look for a free Tx mailbox
-	  while(HAL_CAN_GetTxMailboxesFreeLevel(&hcan) == 0);
-	  if(HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox) != HAL_OK){
-		  //transmission request error
-		  Error_Handler();
-	  }
+//
+//	  //mandatory to look for a free Tx mailbox
+//	  while(HAL_CAN_GetTxMailboxesFreeLevel(&hcan) == 0);
+//	  if(HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox) != HAL_OK){
+//		  //transmission request error
+//		  Error_Handler();
+//	  }
 
     /* USER CODE END WHILE */
 
@@ -353,7 +373,7 @@ static void MX_CAN_Init(void)
   /* USER CODE END CAN_Init 1 */
   hcan.Instance = CAN;
   hcan.Init.Prescaler = 6;
-  hcan.Init.Mode = CAN_MODE_LOOPBACK;
+  hcan.Init.Mode = CAN_MODE_NORMAL;
   hcan.Init.SyncJumpWidth = CAN_SJW_1TQ;
   hcan.Init.TimeSeg1 = CAN_BS1_12TQ;
   hcan.Init.TimeSeg2 = CAN_BS2_3TQ;
@@ -434,6 +454,46 @@ static void MX_SPI1_Init(void)
   /* USER CODE BEGIN SPI1_Init 2 */
 
   /* USER CODE END SPI1_Init 2 */
+
+}
+
+/**
+  * @brief SPI2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_SPI2_Init(void)
+{
+
+  /* USER CODE BEGIN SPI2_Init 0 */
+
+  /* USER CODE END SPI2_Init 0 */
+
+  /* USER CODE BEGIN SPI2_Init 1 */
+
+  /* USER CODE END SPI2_Init 1 */
+  /* SPI2 parameter configuration*/
+  hspi2.Instance = SPI2;
+  hspi2.Init.Mode = SPI_MODE_MASTER;
+  hspi2.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi2.Init.DataSize = SPI_DATASIZE_4BIT;
+  hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi2.Init.NSS = SPI_NSS_SOFT;
+  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
+  hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
+  hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+  hspi2.Init.CRCPolynomial = 7;
+  hspi2.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
+  hspi2.Init.NSSPMode = SPI_NSS_PULSE_ENABLE;
+  if (HAL_SPI_Init(&hspi2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN SPI2_Init 2 */
+
+  /* USER CODE END SPI2_Init 2 */
 
 }
 
@@ -534,22 +594,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(Button_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : LCD_SCL_Pin */
-  GPIO_InitStruct.Pin = LCD_SCL_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  GPIO_InitStruct.Alternate = GPIO_AF5_SPI2;
-  HAL_GPIO_Init(LCD_SCL_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : LCD_CSB_Pin LCD_MOSI_Pin */
-  GPIO_InitStruct.Pin = LCD_CSB_Pin|LCD_MOSI_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  GPIO_InitStruct.Alternate = GPIO_AF0_SPI2;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
   /*Configure GPIO pins : LCD_RS_Pin LCD_RST_Pin */
   GPIO_InitStruct.Pin = LCD_RS_Pin|LCD_RST_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -584,21 +628,21 @@ static void MX_GPIO_Init(void)
 
 
 
-//void HAL_GPIO_EXTI_Callback(uint16_t GPIO_PIN)
-//	{
-//		if (GPIO_PIN == GPIO_PIN_13)
-//		{
-//			if (led_state == 0){
-//				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
-//				led_state = 1;
-//			}
-//			else{
-//				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
-//				led_state = 0;
-//			}
-//		}
-//
-//	}
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_PIN)
+	{
+		if (GPIO_PIN == GPIO_PIN_13)
+		{
+			if (led_state == 0){
+				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
+				led_state = 1;
+			}
+			else{
+				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
+				led_state = 0;
+			}
+		}
+
+	}
 /* USER CODE END 4 */
 
 /**
