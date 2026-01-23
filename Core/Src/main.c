@@ -287,18 +287,18 @@ int main(void)
 
 
 
-//	  for(int i=0; i<8; i++){
-//	  	  TxData[i] = (TxData[i] + (1+i)) & 0xFF;				//wraps around when reached 255
-//	    }
-//	  TxData[0] ++; 				//increment the first byte
-//	  TxData[7] --;					//increment the last byte
-//
-//	  //mandatory to look for a free Tx mailbox
-//	  while(HAL_CAN_GetTxMailboxesFreeLevel(&hcan) == 0);
-//	  if(HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox) != HAL_OK){
-//		  //transmission request error
-//		  Error_Handler();
-//	  }
+	  for(int i=0; i<8; i++){
+	  	  TxData[i] = (TxData[i] + (1+i)) & 0xFF;				//wraps around when reached 255
+	    }
+	  TxData[0] ++; 				//increment the first byte
+	  TxData[7] --;					//increment the last byte
+
+	  //mandatory to look for a free Tx mailbox
+	  while(HAL_CAN_GetTxMailboxesFreeLevel(&hcan) == 0);
+	  if(HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox) != HAL_OK){
+		  //transmission request error
+		  Error_Handler();
+	  }
 
     /* USER CODE END WHILE */
 
