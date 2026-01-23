@@ -25,22 +25,16 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
+#include "canbus.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-struct CANmessage{
-	uint32_t Id;
-	uint8_t flags;
-	uint8_t DLC;
-	uint8_t Data[8];
-};
 
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define CANQUEUE_SIZE 128
 
 /* USER CODE END PD */
 
@@ -135,147 +129,8 @@ int main(void)
   MX_USART2_UART_Init();
   MX_SPI2_Init();
   /* USER CODE BEGIN 2 */
-//  if (__HAL_CAN_GET_FLAG(&hcan, CAN_FLAG_BOF)) {
-//      HAL_CAN_DeInit(&hcan);
-//      HAL_CAN_Init(&hcan);
-//  }
-
-  TxHeader.StdId = 0x123;
-  TxHeader.RTR = CAN_RTR_DATA;
-  TxHeader.IDE = CAN_ID_STD;
-  TxHeader.DLC = 8;
-  TxHeader.TransmitGlobalTime = DISABLE;
-  for (int i=0; i<8; i++){
-	  TxData[i] = 0;
-  }
-//  TxData[0] = 0;
-//  TxData[7] = 0xFF;
-
-  //for UART:
-//  myprintf("\r\n~ SD card demo ~\r\n\r\n");
-
-  tx = 0xAB, rx = 0x00;
-  HAL_SPI_TransmitReceive(&hspi1, &tx, &rx, 1, 100);
-
-//  HAL_Delay(1000); // let card power up
-//
-//  uint8_t cmd0[6] = {0x40, 0,0,0,0,0x95}; // CMD0
-//  uint8_t resp = 0xFF;
-//
-//  HAL_GPIO_WritePin(SD_CS_GPIO_Port, SD_CS_Pin, GPIO_PIN_RESET); // select
-//  HAL_SPI_Transmit(&hspi1, cmd0, 6, 100);
-//
-//  // poll for response
-//  for(int i=0;i<100;i++){
-//      HAL_SPI_TransmitReceive(&hspi1, &resp, &resp, 1, 100);
-//      if((resp & 0x80)==0) break;
-//  }
-//
-//  HAL_GPIO_WritePin(SD_CS_GPIO_Port, SD_CS_Pin, GPIO_PIN_SET); // deselect
-
-  // resp == 0x01 means card is awake and ready
-
-
-  //PREVIOUS TEST
-
-//  HAL_Delay(1000);				//short delay to let SD card settle
-//
-//  FATFS FatFs;					//Fatfs handle
-//  FIL fil;						//File handle
-//  FRESULT fres;					//Result after operations
-//
-//  //mount
-//  fres = f_mount(&FatFs, "", 1);
-//  if(fres != FR_OK){
-//	  Error_Handler();
-//  }
-//
-//  fres = f_open(&fil, "test2.txt", FA_WRITE | FA_CREATE_ALWAYS);
-//  if(fres != FR_OK){
-//	  Error_Handler();
-//  }
-//
-//  UINT bytesWritten;
-//  fres = f_write(&fil, "HELLO", 5, &bytesWritten);
-//  if(fres != FR_OK || bytesWritten != 5){
-//	  Error_Handler();
-//  }
-//
-//  f_close(&fil);
-
-  //PREVIOUS PREVIOUS TEST
-  //Write something
-//
-//  //open the file system
-//  fres = f_mount(&FatFs, "", 1);	//1=mount now
-//  if(fres != FR_OK){
-//	  myprintf("f_mount error (%i)\r\n", fres);
-//	  while(1);
-//  }
-//
-//  //get some stats from the SD card
-//  DWORD free_clusters, free_sectors, total_sectors;
-//
-//  FATFS* getFreeFs;
-//
-//  fres = f_getfree("", &free_clusters, &getFreeFs);
-//  if (fres != FR_OK){
-//	  myprintf("f_getfree error (%i)\r\n", fres);
-//	  while(1);
-//  }
-//
-//  total_sectors = (getFreeFs->n_fatent - 2) * getFreeFs->csize;
-//  free_sectors = free_clusters * getFreeFs->csize;
-//
-//  myprintf("SD card stats:\r\n%10lu KiB total drive space.\r\n%10lu KiB available.\r\n", total_sectors / 2, free_sectors / 2);
-//
-//  //open file "test.txt"
-//  fres = f_open(&fil, "test.txt", FA_READ);
-//  if(fres != FR_OK){
-//	  myprintf("f_open error (%i)\r\n");
-//	  while(1);
-//  }
-//  myprintf("I was able to open 'test.txt' for reading!\r\n");
-//
-//  //read 30 bytes from "test.txt" on the SD card
-//  BYTE readBuf[30];
-//
-//  //either use f_read OR f_gets to get data out of files
-//  //f_gets is a wrapper on f_read that does some string formatting
-//  TCHAR* rres = f_gets((TCHAR*)readBuf, 30, &fil);
-//  if(rres != 0){
-//	  myprintf("Read string 'test.text' contents: %s\r\n", readBuf);
-//  }
-//  else{
-//	  myprintf("f_gets error (%i)\r\n", fres);
-//  }
-//  f_close(&fil);
-//
-//  //write a file "write.txt"
-//  fres = f_open(&fil, "write.txt", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
-//  if(fres == FR_OK){
-//	  myprintf("I was able to open 'write.txt' for writing\r\n");
-//  }
-//  else{
-//	  myprintf("f_open error (%i)\r\n", fres);
-//  }
-//
-//  //copy in a string
-//  strncpy((char*)readBuf, "a new file is made!", 20);
-//  UINT bytesWrote;
-//  fres = f_write(&fil, readBuf, 19, &bytesWrote);
-//  if (fres == FR_OK){
-//	  myprintf("Wrote %i bytes to 'write.text'!\r\n", bytesWrote);
-//  }
-//  else{
-//	  myprintf("f_write error (%i)\r\n");
-//  }
-//
-//  f_close(&fil);
-//
-//  //de-mount the drive
-//  f_mount(NULL, "", 0);
-
+  CANbus_Init();
+  CAN_EnableCollection();
 
   /* USER CODE END 2 */
 
@@ -365,11 +220,11 @@ static void MX_CAN_Init(void)
 {
 
   /* USER CODE BEGIN CAN_Init 0 */
-	CAN_FilterTypeDef sFilterConfig;
+//	CAN_FilterTypeDef sFilterConfig;
   /* USER CODE END CAN_Init 0 */
 
   /* USER CODE BEGIN CAN_Init 1 */
-
+//
   /* USER CODE END CAN_Init 1 */
   hcan.Instance = CAN;
   hcan.Init.Prescaler = 6;
@@ -388,31 +243,31 @@ static void MX_CAN_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN CAN_Init 2 */
-  sFilterConfig.FilterBank = 0;
-  sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
-  sFilterConfig.FilterScale = CAN_FILTERSCALE_32BIT;
-  sFilterConfig.FilterIdHigh = 0x0000;
-  sFilterConfig.FilterIdLow = 0x0000;
-  sFilterConfig.FilterMaskIdHigh = 0x0000;
-  sFilterConfig.FilterMaskIdLow = 0x0000;
-  sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
-  sFilterConfig.FilterActivation = ENABLE;
-  sFilterConfig.SlaveStartFilterBank = 14;
-  if (HAL_CAN_ConfigFilter(&hcan, &sFilterConfig) != HAL_OK){
-	  //filter configuration error
-	  Error_Handler();
-  }
-  //Starting CAN peripheral
-  if (HAL_CAN_Start(&hcan) != HAL_OK){
-	  //start error
-	  Error_Handler();
-  }
-  //Activate CAN RX notification on FIFO0
-  if (HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING)){
-	  //notification error
-	  Error_Handler();
-  }
-
+//  sFilterConfig.FilterBank = 0;
+//  sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
+//  sFilterConfig.FilterScale = CAN_FILTERSCALE_32BIT;
+//  sFilterConfig.FilterIdHigh = 0x0000;
+//  sFilterConfig.FilterIdLow = 0x0000;
+//  sFilterConfig.FilterMaskIdHigh = 0x0000;
+//  sFilterConfig.FilterMaskIdLow = 0x0000;
+//  sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
+//  sFilterConfig.FilterActivation = ENABLE;
+//  sFilterConfig.SlaveStartFilterBank = 14;
+//  if (HAL_CAN_ConfigFilter(&hcan, &sFilterConfig) != HAL_OK){
+//	  //filter configuration error
+//	  Error_Handler();
+//  }
+//  //Starting CAN peripheral
+//  if (HAL_CAN_Start(&hcan) != HAL_OK){
+//	  //start error
+//	  Error_Handler();
+//  }
+//  //Activate CAN RX notification on FIFO0
+//  if (HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING)){
+//	  //notification error
+//	  Error_Handler();
+//  }
+//
   /* USER CODE END CAN_Init 2 */
 
 }
