@@ -132,6 +132,7 @@ int main(void)
   CANbus_Init();
   HAL_CAN_Start(&hcan);
   CAN_EnableCollection();
+  HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING);
 
 //  HAL_CAN_Receive_IT(&hcan, CAN_RX_FIFO0);
 
@@ -142,6 +143,8 @@ int main(void)
 
   while (1)
   {
+
+
 
 
 

@@ -44,8 +44,6 @@ void CAN_EnableCollection(void){
 	collection_active = 1;
 }
 
-
-
 static void CAN_Config(void){
 	CAN_FilterTypeDef sFilterConfig;
 //		static CanRxMsgTypeDef RxMessage;
@@ -131,7 +129,6 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 	  CANqueue_write_index = next_write_index;
 	}
   }
-
 //			  CAN_Receive();
 }
 
@@ -152,7 +149,7 @@ void CANbus_Send(uint32_t id, uint8_t *data, uint8_t len){
 
 	//wait until a mailbox is free
 	while (HAL_CAN_GetTxMailboxesFreeLevel(&hcan) == 0){
-		// wait
+		// wait until free
 	}
 
 	if (HAL_CAN_AddTxMessage(&hcan, &TxHeader, data, &TxMailbox) != HAL_OK){

@@ -24,5 +24,6 @@ void CANbus_service(void);
 void CAN_EnableCollection(void);
 void CANbus_Send(uint32_t id, uint8_t *data, uint8_t len);
 int CAN_Dequeue(struct CANmessage *msg);
+void CAN_Task(void);
 
 #endif /* INC_CANBUS_H_ */

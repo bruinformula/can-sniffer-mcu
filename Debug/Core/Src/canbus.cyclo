@@ -1,8 +1,8 @@
-../Core/Src/canbus.c:36:7:CANbus_Init	1
-../Core/Src/canbus.c:43:7:CAN_EnableCollection	1
-../Core/Src/canbus.c:49:14:CAN_Config	5
-../Core/Src/canbus.c:97:7:HAL_CAN_RxFifo0MsgPendingCallback	6
-../Core/Src/canbus.c:139:8:HAL_CAN_ErrorCallback	1
-../Core/Src/canbus.c:145:8:CANbus_Send	3
-../Core/Src/canbus.c:164:8:CAN_Task	4
-../Core/Src/canbus.c:182:7:CAN_Dequeue	3
+../Core/Src/canbus.c:36:6:CANbus_Init	1
+../Core/Src/canbus.c:43:6:CAN_EnableCollection	1
+../Core/Src/canbus.c:47:13:CAN_Config	5
+../Core/Src/canbus.c:95:6:HAL_CAN_RxFifo0MsgPendingCallback	6
+../Core/Src/canbus.c:136:6:HAL_CAN_ErrorCallback	1
+../Core/Src/canbus.c:142:6:CANbus_Send	3
+../Core/Src/canbus.c:161:6:CAN_Task	4
+../Core/Src/canbus.c:179:5:CAN_Dequeue	3
