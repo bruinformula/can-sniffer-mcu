@@ -1,5 +1,8 @@
-../Core/Src/canbus.c:27:7:CANbus_Init	8	static
-../Core/Src/canbus.c:34:7:CAN_EnableCollection	8	static
-../Core/Src/canbus.c:38:14:CAN_Config	48	static,ignoring_inline_asm
-../Core/Src/canbus.c:83:7:HAL_CAN_RxFifo0MsgPendingCallback	64	static,ignoring_inline_asm
-../Core/Src/canbus.c:125:9:HAL_CAN_ErrorCallback	16	static
+../Core/Src/canbus.c:36:7:CANbus_Init	8	static
+../Core/Src/canbus.c:43:7:CAN_EnableCollection	8	static
+../Core/Src/canbus.c:49:14:CAN_Config	48	static,ignoring_inline_asm
+../Core/Src/canbus.c:97:7:HAL_CAN_RxFifo0MsgPendingCallback	24	static,ignoring_inline_asm
+../Core/Src/canbus.c:139:8:HAL_CAN_ErrorCallback	16	static
+../Core/Src/canbus.c:145:8:CANbus_Send	24	static,ignoring_inline_asm
+../Core/Src/canbus.c:164:8:CAN_Task	24	static
+../Core/Src/canbus.c:182:7:CAN_Dequeue	24	static

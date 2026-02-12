@@ -132,6 +132,7 @@ int main(void)
   CANbus_Init();
   HAL_CAN_Start(&hcan);
   CAN_EnableCollection();
+
 //  HAL_CAN_Receive_IT(&hcan, CAN_RX_FIFO0);
 
   /* USER CODE END 2 */
@@ -510,6 +511,7 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
+
   __disable_irq();
   while (1)
   {

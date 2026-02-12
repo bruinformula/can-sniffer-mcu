@@ -19,8 +19,10 @@ struct CANmessage{
 			uint8_t Data[8];
 		};
 
-extern void CANbus_Init(void);
-extern void CANbus_service(void);
-extern void CAN_EnableCollection(void);
+void CANbus_Init(void);
+void CANbus_service(void);
+void CAN_EnableCollection(void);
+void CANbus_Send(uint32_t id, uint8_t *data, uint8_t len);
+int CAN_Dequeue(struct CANmessage *msg);
 
 #endif /* INC_CANBUS_H_ */
