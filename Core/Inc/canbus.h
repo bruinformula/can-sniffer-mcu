@@ -8,17 +8,19 @@
 #ifndef INC_CANBUS_H_
 #define INC_CANBUS_H_
 #include <stdint.h>
+#include "stm32f0xx_hal.h"
 
 #define CANQUEUE_SIZE 128
 #define ERROR_CONDITION() __BKPT()
 
 struct CANmessage{
-			uint32_t Id;
-			uint8_t flags;
-			uint8_t DLC;
-			uint8_t Data[8];
+		uint32_t Id;
+		uint8_t flags;
+		uint8_t DLC;
+		uint8_t Data[8];
 		};
 
+extern CAN_HandleTypeDef hcan;
 void CANbus_Init(void);
 void CANbus_service(void);
 void CAN_EnableCollection(void);

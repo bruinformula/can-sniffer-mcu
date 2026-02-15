@@ -10,24 +10,23 @@
  */
 #include "canbus.h"
 #include <stdint.h>
-#include "stm32f0xx_hal.h"
 //#include "stm32f0xx_hal_can.h"
 
 
-static CAN_HandleTypeDef 			hcan;
-static struct CANmessage 			CANqueue[CANQUEUE_SIZE];
-static uint32_t 					CANqueue_write_index, CANqueue_read_index;
-static uint32_t 					collection_active;
-static CAN_RxHeaderTypeDef 			RxHeader;
-static uint8_t 						RxData[8];
-static CAN_TxHeaderTypeDef 			TxHeader;
-static uint32_t 					TxMailbox;
-volatile uint32_t 					can_rx_irq_count = 0;
-volatile uint32_t 					last_queue_index=0;
-static int 							already_sent = 0;
-static uint8_t              		data1[8] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88};
-static uint8_t              		data2[8] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88};
-static uint32_t 					response_received = 0;
+CAN_HandleTypeDef 			hcan;
+struct CANmessage 			CANqueue[CANQUEUE_SIZE];
+uint32_t 					CANqueue_write_index, CANqueue_read_index;
+uint32_t 					collection_active;
+CAN_RxHeaderTypeDef 		RxHeader;
+uint8_t 					RxData[8];
+CAN_TxHeaderTypeDef 		TxHeader;
+uint32_t 					TxMailbox;
+uint32_t 					can_rx_irq_count = 0;
+uint32_t 					last_queue_index=0;
+int 						already_sent = 0;
+uint8_t              		data1[8] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88};
+uint8_t              		data2[8] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88};
+uint32_t 					response_received = 0;
 
 //	static void CAN_Receive(void);
 static void CAN_Config(void);

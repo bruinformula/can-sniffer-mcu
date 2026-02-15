@@ -44,7 +44,7 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-CAN_HandleTypeDef hcan;
+//CAN_HandleTypeDef hcan;
 
 SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi2;
@@ -55,13 +55,13 @@ PCD_HandleTypeDef hpcd_USB_FS;
 
 /* USER CODE BEGIN PV */
 uint16_t led_state = 0;
-CAN_TxHeaderTypeDef   TxHeader; /* Header containing the information of the transmitted frame */
-CAN_RxHeaderTypeDef   RxHeader; ; /* Header containing the information of the received frame */
-uint8_t               TxData[8] = {0};  /* Buffer of the data to send */
-uint8_t               RxData[8]; /* Buffer of the received data */
-uint32_t              TxMailbox;  /* The number of the mail box that transmitted the Tx message */
-uint8_t 			  tx;
-uint8_t 			  rx;
+//CAN_TxHeaderTypeDef   TxHeader; /* Header containing the information of the transmitted frame */
+//CAN_RxHeaderTypeDef   RxHeader; ; /* Header containing the information of the received frame */
+//uint8_t               TxData[8] = {0};  /* Buffer of the data to send */
+//uint8_t               RxData[8]; /* Buffer of the received data */
+//uint32_t              TxMailbox;  /* The number of the mail box that transmitted the Tx message */
+//uint8_t 			  tx;
+//uint8_t 			  rx;
 //static struct CANmessage CANqueue[CANQUEUE_SIZE];
 //static uint32_t CANqueue_write_index;
 
@@ -133,6 +133,7 @@ int main(void)
   HAL_CAN_Start(&hcan);
   CAN_EnableCollection();
   HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING);
+  HAL_CAN_IRQHandler(&hcan);
 
 //  HAL_CAN_Receive_IT(&hcan, CAN_RX_FIFO0);
 
