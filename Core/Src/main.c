@@ -54,7 +54,13 @@ UART_HandleTypeDef huart2;
 PCD_HandleTypeDef hpcd_USB_FS;
 
 /* USER CODE BEGIN PV */
-uint16_t led_state = 0;
+uint16_t sd_state = 0;
+
+FATFS fs; // Working area for the file system
+FRESULT res; // To store the result
+FIL myFile;
+UINT bytesWritten;
+char logData[] = "Test string\r\n";
 //CAN_TxHeaderTypeDef   TxHeader; /* Header containing the information of the transmitted frame */
 //CAN_RxHeaderTypeDef   RxHeader; ; /* Header containing the information of the received frame */
 //uint8_t               TxData[8] = {0};  /* Buffer of the data to send */
@@ -71,7 +77,7 @@ uint16_t led_state = 0;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USB_PCD_Init(void);
-//static void MX_CAN_Init(void);
+static void MX_CAN_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_SPI2_Init(void);
@@ -123,7 +129,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USB_PCD_Init();
-//  MX_CAN_Init();
+  MX_CAN_Init();
   MX_SPI1_Init();
   MX_FATFS_Init();
   MX_USART2_UART_Init();
@@ -137,6 +143,17 @@ int main(void)
 
 //  HAL_CAN_Receive_IT(&hcan, CAN_RX_FIFO0);
 
+
+	res = f_mount(&fs, "", 1);
+
+	if (res == FR_OK) {
+		sd_state=1;
+	}
+
+	if (f_open(&myFile, "LOG.TXT", FA_CREATE_ALWAYS | FA_WRITE) == FR_OK) {
+		f_write(&myFile, logData, strlen(logData), &bytesWritten);
+		f_close(&myFile);
+	}
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -223,33 +240,33 @@ void SystemClock_Config(void)
   * @param None
   * @retval None
   */
-//static void MX_CAN_Init(void)
-//{
-//
-//  /* USER CODE BEGIN CAN_Init 0 */
+static void MX_CAN_Init(void)
+{
+
+  /* USER CODE BEGIN CAN_Init 0 */
 ////	CAN_FilterTypeDef sFilterConfig;
-//  /* USER CODE END CAN_Init 0 */
-//
-//  /* USER CODE BEGIN CAN_Init 1 */
+  /* USER CODE END CAN_Init 0 */
+
+  /* USER CODE BEGIN CAN_Init 1 */
 ////
-//  /* USER CODE END CAN_Init 1 */
-//  hcan.Instance = CAN;
-//  hcan.Init.Prescaler = 6;
-//  hcan.Init.Mode = CAN_MODE_NORMAL;
-//  hcan.Init.SyncJumpWidth = CAN_SJW_1TQ;
-//  hcan.Init.TimeSeg1 = CAN_BS1_12TQ;
-//  hcan.Init.TimeSeg2 = CAN_BS2_3TQ;
-//  hcan.Init.TimeTriggeredMode = DISABLE;
-//  hcan.Init.AutoBusOff = DISABLE;
-//  hcan.Init.AutoWakeUp = DISABLE;
-//  hcan.Init.AutoRetransmission = DISABLE;
-//  hcan.Init.ReceiveFifoLocked = DISABLE;
-//  hcan.Init.TransmitFifoPriority = DISABLE;
-//  if (HAL_CAN_Init(&hcan) != HAL_OK)
-//  {
-//    Error_Handler();
-//  }
-//  /* USER CODE BEGIN CAN_Init 2 */
+  /* USER CODE END CAN_Init 1 */
+  hcan.Instance = CAN;
+  hcan.Init.Prescaler = 6;
+  hcan.Init.Mode = CAN_MODE_NORMAL;
+  hcan.Init.SyncJumpWidth = CAN_SJW_1TQ;
+  hcan.Init.TimeSeg1 = CAN_BS1_12TQ;
+  hcan.Init.TimeSeg2 = CAN_BS2_3TQ;
+  hcan.Init.TimeTriggeredMode = DISABLE;
+  hcan.Init.AutoBusOff = DISABLE;
+  hcan.Init.AutoWakeUp = DISABLE;
+  hcan.Init.AutoRetransmission = DISABLE;
+  hcan.Init.ReceiveFifoLocked = DISABLE;
+  hcan.Init.TransmitFifoPriority = DISABLE;
+  if (HAL_CAN_Init(&hcan) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN CAN_Init 2 */
 //  sFilterConfig.FilterBank = 0;
 //  sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
 //  sFilterConfig.FilterScale = CAN_FILTERSCALE_32BIT;
@@ -275,9 +292,9 @@ void SystemClock_Config(void)
 //	  Error_Handler();
 //  }
 ////
-//  /* USER CODE END CAN_Init 2 */
-//
-//}
+  /* USER CODE END CAN_Init 2 */
+
+}
 
 /**
   * @brief SPI1 Initialization Function
@@ -490,21 +507,21 @@ static void MX_GPIO_Init(void)
 
 
 
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_PIN)
-	{
-		if (GPIO_PIN == GPIO_PIN_13)
-		{
-			if (led_state == 0){
-				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
-				led_state = 1;
-			}
-			else{
-				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
-				led_state = 0;
-			}
-		}
-
-	}
+//void HAL_GPIO_EXTI_Callback(uint16_t GPIO_PIN)
+//	{
+//		if (GPIO_PIN == GPIO_PIN_13)
+//		{
+//			if (led_state == 0){
+//				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
+//				led_state = 1;
+//			}
+//			else{
+//				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
+//				led_state = 0;
+//			}
+//		}
+//
+//	}
 /* USER CODE END 4 */
 
 /**
