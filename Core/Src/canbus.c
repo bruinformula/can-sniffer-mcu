@@ -195,6 +195,9 @@ int CAN_Dequeue(struct CANmessage *msg){
 
 void CAN_Transmit(){
 
+	TxHeader.StdId = 0x123;         // Change this to any hex value you want!
+	TxHeader.IDE = CAN_ID_STD;      // Ensure it's set to Standard 11-bit mode
+	TxHeader.DLC = 8;
 	for(int i=0; i<8; i++){
 	  TxData[i] = (TxData[i] + (1+i)) & 0xFF;				//wraps around when reached 255
 	}
