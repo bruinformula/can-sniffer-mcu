@@ -6,5 +6,5 @@
 ../Core/Src/main.c:372:13:MX_USART2_UART_Init	8	static
 ../Core/Src/main.c:407:13:MX_USB_PCD_Init	8	static
 ../Core/Src/main.c:439:13:MX_GPIO_Init	56	static
-../Core/Src/main.c:488:6:Logging_Task	96	static
+../Core/Src/main.c:488:6:Logging_Task	144	static
 ../Core/Src/main.c:541:6:Error_Handler	8	static,ignoring_inline_asm

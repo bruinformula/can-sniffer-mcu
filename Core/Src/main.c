@@ -489,18 +489,18 @@ void Logging_Task(void){
 	while(CAN_Dequeue(&temp_msg)){
 		char line[64];
 
-//		int len = sprintf(line, "%03lX,%d,%02X%02X%02X%02X%02X%02X%02X%02X\n",
-//                temp_msg.Id, temp_msg.DLC,
-//                temp_msg.Data[0], temp_msg.Data[1], temp_msg.Data[2], temp_msg.Data[3],
-//                temp_msg.Data[4], temp_msg.Data[5], temp_msg.Data[6], temp_msg.Data[7]);
+		int len = sprintf(line, "%03lX,%d,%02X%02X%02X%02X%02X%02X%02X%02X\n",
+                temp_msg.Id, temp_msg.DLC,
+                temp_msg.Data[0], temp_msg.Data[1], temp_msg.Data[2], temp_msg.Data[3],
+                temp_msg.Data[4], temp_msg.Data[5], temp_msg.Data[6], temp_msg.Data[7]);
 
 		// Add the IRQ count as a "fake" data byte to see if it's changing
-		int len = sprintf(line, "%03lX,%d,IRQ:%lu\n",
-		                  temp_msg.Id, temp_msg.DLC, can_rx_irq_count);
+//		int len = sprintf(line, "%03lX,%d,IRQ:%lu\n",
+//		                  temp_msg.Id, temp_msg.DLC, can_rx_irq_count);
 
 		if (sd_idx + len >= 512){
 			UINT bw;
-			if (f_open(&myFile, "DATA3.TXT", FA_OPEN_ALWAYS | FA_WRITE) == FR_OK) {
+			if (f_open(&myFile, "DATA4.TXT", FA_OPEN_ALWAYS | FA_WRITE) == FR_OK) {
 				f_write(&myFile, sd_buffer, sd_idx, &bw);
 				f_close(&myFile);
 			}
