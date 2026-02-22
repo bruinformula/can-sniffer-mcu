@@ -137,9 +137,9 @@ int main(void)
   /* USER CODE BEGIN 2 */
   CANbus_Init();
   HAL_CAN_Start(&hcan);
-  CAN_EnableCollection();
-  HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING);
-  HAL_CAN_IRQHandler(&hcan);
+//  CAN_EnableCollection();
+//  HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING);
+//  HAL_CAN_IRQHandler(&hcan);
 
 //  HAL_CAN_Receive_IT(&hcan, CAN_RX_FIFO0);
 
@@ -150,10 +150,11 @@ int main(void)
 		sd_state=1;
 	}
 
-	if (f_open(&myFile, "LOG.TXT", FA_CREATE_ALWAYS | FA_WRITE) == FR_OK) {
-		f_write(&myFile, logData, strlen(logData), &bytesWritten);
-		f_close(&myFile);
-	}
+//	if (f_open(&myFile, "LOG.TXT", FA_CREATE_ALWAYS | FA_WRITE) == FR_OK) {
+//		f_write(&myFile, logData, strlen(logData), &bytesWritten);
+//		f_close(&myFile);
+//	}
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -161,23 +162,8 @@ int main(void)
 
   while (1)
   {
-
-
-
-
-
-//	  for(int i=0; i<8; i++){
-//	  	  TxData[i] = (TxData[i] + (1+i)) & 0xFF;				//wraps around when reached 255
-//	    }
-//	  TxData[0] ++; 				//increment the first byte
-//	  TxData[7] --;					//increment the last byte
-//
-//	  //mandatory to look for a free Tx mailbox
-//	  while(HAL_CAN_GetTxMailboxesFreeLevel(&hcan) == 0);
-//	  if(HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox) != HAL_OK){
-//		  //transmission request error
-//		  Error_Handler();
-//	  }
+	  CAN_Transmit();
+	  HAL_Delay(200);
 
     /* USER CODE END WHILE */
 

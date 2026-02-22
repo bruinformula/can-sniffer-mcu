@@ -20,6 +20,7 @@ uint32_t 					collection_active;
 CAN_RxHeaderTypeDef 		RxHeader;
 uint8_t 					RxData[8];
 CAN_TxHeaderTypeDef 		TxHeader;
+uint8_t           		    TxData[8] = {0};  /* Buffer of the data to send */
 uint32_t 					TxMailbox;
 uint32_t 					can_rx_irq_count = 0;
 uint32_t 					last_queue_index=0;
@@ -190,6 +191,23 @@ int CAN_Dequeue(struct CANmessage *msg){
 		CANqueue_read_index = 0;
 
 	return 1;
+}
+
+void CAN_Transmit(){
+
+	for(int i=0; i<8; i++){
+	  TxData[i] = (TxData[i] + (1+i)) & 0xFF;				//wraps around when reached 255
+	}
+//	TxData[0] ++; 				//increment the first byte
+//	TxData[7] --;					//increment the last byte
+
+	//mandatory to look for a free Tx mailbox
+	while(HAL_CAN_GetTxMailboxesFreeLevel(&hcan) == 0);
+	if(HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox) != HAL_OK){
+	  //transmission request error
+		ERROR_CONDITION();
+	}
+
 }
 
 // optional: process messages in main loop
