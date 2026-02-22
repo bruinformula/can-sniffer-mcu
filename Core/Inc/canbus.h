@@ -10,7 +10,7 @@
 #include <stdint.h>
 #include "stm32f0xx_hal.h"
 
-#define CANQUEUE_SIZE 128
+#define CANQUEUE_SIZE 256
 #define ERROR_CONDITION() __BKPT()
 
 struct CANmessage{
@@ -21,6 +21,7 @@ struct CANmessage{
 		};
 
 extern CAN_HandleTypeDef hcan;
+extern uint32_t can_rx_irq_count;
 void CANbus_Init(void);
 void CANbus_service(void);
 void CAN_EnableCollection(void);

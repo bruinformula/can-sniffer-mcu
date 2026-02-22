@@ -26,6 +26,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include "canbus.h"
+#define SD_BUFFER_SIZE 512
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -54,13 +55,16 @@ UART_HandleTypeDef huart2;
 PCD_HandleTypeDef hpcd_USB_FS;
 
 /* USER CODE BEGIN PV */
-uint16_t sd_state = 0;
-
-FATFS fs; // Working area for the file system
-FRESULT res; // To store the result
-FIL myFile;
-UINT bytesWritten;
-char logData[] = "Test string\r\n";
+struct		CANmessage temp_msg;
+uint16_t 	sd_state = 0;
+char 		sd_buffer[SD_BUFFER_SIZE];
+uint16_t 	sd_idx = 0;
+uint32_t 	total_frames_logged = 0;
+FATFS 		fs; // Working area for the file system
+FRESULT 	res; // To store the result
+FIL 		myFile;
+UINT 		bytesWritten;
+char 		logData[] = "Test string\r\n";
 //CAN_TxHeaderTypeDef   TxHeader; /* Header containing the information of the transmitted frame */
 //CAN_RxHeaderTypeDef   RxHeader; ; /* Header containing the information of the received frame */
 //uint8_t               TxData[8] = {0};  /* Buffer of the data to send */
@@ -82,21 +86,12 @@ static void MX_SPI1_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_SPI2_Init(void);
 /* USER CODE BEGIN PFP */
-//  void myprintf(const char *fmt, ...);
+void Logging_Task(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-//  void myprintf(const char *fmt, ...){
-//	  static char buffer[256];
-//	  va_list args;
-//	  va_start(args, fmt);
-//	  vsnprintf(buffer, sizeof(buffer), fmt, args);
-//	  va_end(args);
-//
-//	  int len = strlen(buffer);
-//	  HAL_UART_Transmit(&huart2, (uint8_t*)buffer, len, -1);
-//  }
+
 /* USER CODE END 0 */
 
 /**
@@ -150,10 +145,17 @@ int main(void)
 		sd_state=1;
 	}
 
-	if (f_open(&myFile, "LOG.TXT", FA_CREATE_ALWAYS | FA_WRITE) == FR_OK) {
-		f_write(&myFile, logData, strlen(logData), &bytesWritten);
-		f_close(&myFile);
-	}
+//	if (f_open(&myFile, "LOG.TXT", FA_CREATE_ALWAYS | FA_WRITE) == FR_OK) {
+//		f_write(&myFile, logData, strlen(logData), &bytesWritten);
+//		f_close(&myFile);
+//	}
+
+//	if (f_open(&myFile, "LOG.TXT", FA_OPEN_ALWAYS | FA_WRITE) == FR_OK){
+//		f_lseek(&myFile, f_size(&myFile));
+//	}
+	memset(sd_buffer, 0, 512); // Clean the buffer
+	sd_idx = 0;                // Reset index
+	HAL_Delay(200);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -161,23 +163,9 @@ int main(void)
 
   while (1)
   {
+	  Logging_Task();
 
 
-
-
-
-//	  for(int i=0; i<8; i++){
-//	  	  TxData[i] = (TxData[i] + (1+i)) & 0xFF;				//wraps around when reached 255
-//	    }
-//	  TxData[0] ++; 				//increment the first byte
-//	  TxData[7] --;					//increment the last byte
-//
-//	  //mandatory to look for a free Tx mailbox
-//	  while(HAL_CAN_GetTxMailboxesFreeLevel(&hcan) == 0);
-//	  if(HAL_CAN_AddTxMessage(&hcan, &TxHeader, TxData, &TxMailbox) != HAL_OK){
-//		  //transmission request error
-//		  Error_Handler();
-//	  }
 
     /* USER CODE END WHILE */
 
@@ -497,13 +485,35 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-//  void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *CanHandle){
-//	  //get RX message
-//	  if(HAL_CAN_GetRxMessage(CanHandle, CAN_RX_FIFO0, &RxHeader, RxData) != HAL_OK){
-//		  //reception error
-//		  Error_Handler();
-//	  }
-//  }
+void Logging_Task(void){
+	while(CAN_Dequeue(&temp_msg)){
+		char line[64];
+
+//		int len = sprintf(line, "%03lX,%d,%02X%02X%02X%02X%02X%02X%02X%02X\n",
+//                temp_msg.Id, temp_msg.DLC,
+//                temp_msg.Data[0], temp_msg.Data[1], temp_msg.Data[2], temp_msg.Data[3],
+//                temp_msg.Data[4], temp_msg.Data[5], temp_msg.Data[6], temp_msg.Data[7]);
+
+		// Add the IRQ count as a "fake" data byte to see if it's changing
+		int len = sprintf(line, "%03lX,%d,IRQ:%lu\n",
+		                  temp_msg.Id, temp_msg.DLC, can_rx_irq_count);
+
+		if (sd_idx + len >= 512){
+			UINT bw;
+			if (f_open(&myFile, "DATA3.TXT", FA_OPEN_ALWAYS | FA_WRITE) == FR_OK) {
+				f_write(&myFile, sd_buffer, sd_idx, &bw);
+				f_close(&myFile);
+			}
+			sd_idx = 0;
+		}
+
+		memcpy(&sd_buffer[sd_idx], line, len);
+		sd_idx += len;
+
+		total_frames_logged++;
+	}
+
+}
 
 
 

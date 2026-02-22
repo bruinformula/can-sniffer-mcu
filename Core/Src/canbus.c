@@ -15,7 +15,8 @@
 
 CAN_HandleTypeDef 			hcan;
 struct CANmessage 			CANqueue[CANQUEUE_SIZE];
-uint32_t 					CANqueue_write_index, CANqueue_read_index;
+volatile uint32_t 			CANqueue_write_index, CANqueue_read_index;
+uint32_t					next_read_index;
 uint32_t 					collection_active;
 CAN_RxHeaderTypeDef 		RxHeader;
 uint8_t 					RxData[8];
@@ -116,13 +117,22 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 	//overflow protection: if write pointer overlaps read pointer, then buffer full
 	if (next_write_index != CANqueue_read_index) /* only write if space left in queue */
 	{
-	  CANqueue[CANqueue_write_index].Id = RxHeader.StdId;
+//	  CANqueue[CANqueue_write_index].Id = RxHeader.StdId;
+	if (RxHeader.IDE == CAN_ID_STD) {
+		  CANqueue[CANqueue_write_index].Id = RxHeader.StdId;
+	  } else {
+		  CANqueue[CANqueue_write_index].Id = RxHeader.ExtId;
+	  }
 	  CANqueue[CANqueue_write_index].flags = (RxHeader.IDE == CAN_ID_STD) ? 0x01: 0x00;
 	  CANqueue[CANqueue_write_index].DLC = RxHeader.DLC;
 
 	  //DLC tells how many bytes are in data bytes
-	  for (index = 0; index < RxHeader.DLC; index++)
-		CANqueue[CANqueue_write_index].Data[index] = RxData[index]; /* ST's CAN driver stores byte data in uint32_t for some unexplained reason */
+//	  for (index = 0; index < RxHeader.DLC; index++)
+//		CANqueue[CANqueue_write_index].Data[index] = RxData[index]; /* ST's CAN driver stores byte data in uint32_t for some unexplained reason */
+
+	  for (index = 0; index < RxHeader.DLC && index < 8; index++) {
+		CANqueue[CANqueue_write_index].Data[index] = RxData[index];
+	  }
 
 	  last_queue_index = CANqueue_write_index;
 	  CANqueue_write_index = next_write_index;
@@ -184,13 +194,16 @@ int CAN_Dequeue(struct CANmessage *msg){
 	//copy message
 	*msg = CANqueue[CANqueue_read_index];
 
-	//advance read index
+	//advance read index using next_read_index;
 	CANqueue_read_index++;
 	if(CANqueue_read_index >= CANQUEUE_SIZE)
 		CANqueue_read_index = 0;
 
+//	CANqueue_read_index = next_read_index;
+
 	return 1;
 }
+
 
 // optional: process messages in main loop
 //			void CANbus_service(void)
