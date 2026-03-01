@@ -501,6 +501,7 @@ void Logging_Task(void){
 		if (sd_idx + len >= 512){
 			UINT bw;
 			if (f_open(&myFile, "DATA4.TXT", FA_OPEN_ALWAYS | FA_WRITE) == FR_OK) {
+				f_lseek(&myFile, myFile.fsize);
 				f_write(&myFile, sd_buffer, sd_idx, &bw);
 				f_close(&myFile);
 			}

@@ -7,4 +7,4 @@
 ../Core/Src/main.c:407:13:MX_USB_PCD_Init	2
 ../Core/Src/main.c:439:13:MX_GPIO_Init	1
 ../Core/Src/main.c:488:6:Logging_Task	4
-../Core/Src/main.c:541:6:Error_Handler	1
+../Core/Src/main.c:542:6:Error_Handler	1
