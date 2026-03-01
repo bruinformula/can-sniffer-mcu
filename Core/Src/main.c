@@ -163,7 +163,7 @@ int main(void)
   while (1)
   {
 	  CAN_Transmit();
-	  HAL_Delay(200);
+//	  HAL_Delay(200);
 
     /* USER CODE END WHILE */
 
