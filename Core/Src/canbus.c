@@ -13,7 +13,7 @@
 //#include "stm32f0xx_hal_can.h"
 
 
-CAN_HandleTypeDef 			hcan;
+extern CAN_HandleTypeDef 			hcan;
 struct CANmessage 			CANqueue[CANQUEUE_SIZE];
 volatile uint32_t 			CANqueue_write_index, CANqueue_read_index;
 uint32_t					next_read_index;
@@ -28,6 +28,8 @@ int 						already_sent = 0;
 uint8_t              		data1[8] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88};
 uint8_t              		data2[8] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88};
 uint32_t 					response_received = 0;
+//extern TIM_HandleTypeDef 	htim2;
+
 
 //	static void CAN_Receive(void);
 static void CAN_Config(void);
@@ -105,10 +107,10 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
   //0->ignore all received frames, 1->accept/queue frames
   {
 
-	  if(HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &RxHeader, RxData) != HAL_OK){
-		  ERROR_CONDITION();
-		  return;
-	  }
+	if(HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &RxHeader, RxData) != HAL_OK){
+	  ERROR_CONDITION();
+	  return;
+	}
 	//compute ring-buffer position, wraps around at end
 	next_write_index = CANqueue_write_index + 1;
 	if (CANQUEUE_SIZE == next_write_index)

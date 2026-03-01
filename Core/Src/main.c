@@ -26,6 +26,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include "canbus.h"
+#include "stdbool.h"
 #define SD_BUFFER_SIZE 512
 /* USER CODE END Includes */
 
@@ -45,10 +46,12 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-//CAN_HandleTypeDef hcan;
+CAN_HandleTypeDef hcan;
 
 SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi2;
+
+TIM_HandleTypeDef htim2;
 
 UART_HandleTypeDef huart2;
 
@@ -65,6 +68,8 @@ FRESULT 	res; // To store the result
 FIL 		myFile;
 UINT 		bytesWritten;
 char 		logData[] = "Test string\r\n";
+uint32_t 	can_start_time = 0;
+bool 		first_frame_found = false;
 //CAN_TxHeaderTypeDef   TxHeader; /* Header containing the information of the transmitted frame */
 //CAN_RxHeaderTypeDef   RxHeader; ; /* Header containing the information of the received frame */
 //uint8_t               TxData[8] = {0};  /* Buffer of the data to send */
@@ -85,6 +90,7 @@ static void MX_CAN_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_SPI2_Init(void);
+static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
 void Logging_Task(void);
 /* USER CODE END PFP */
@@ -129,6 +135,7 @@ int main(void)
   MX_FATFS_Init();
   MX_USART2_UART_Init();
   MX_SPI2_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
   CANbus_Init();
   HAL_CAN_Start(&hcan);
@@ -155,7 +162,7 @@ int main(void)
 //	}
 	memset(sd_buffer, 0, 512); // Clean the buffer
 	sd_idx = 0;                // Reset index
-	HAL_Delay(200);
+	HAL_Delay(100);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -365,6 +372,52 @@ static void MX_SPI2_Init(void)
 }
 
 /**
+  * @brief TIM2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM2_Init(void)
+{
+
+  /* USER CODE BEGIN TIM2_Init 0 */
+
+  /* USER CODE END TIM2_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM2_Init 1 */
+
+  /* USER CODE END TIM2_Init 1 */
+  htim2.Instance = TIM2;
+  htim2.Init.Prescaler = 47;
+  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim2.Init.Period = 4294967295;
+  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM2_Init 2 */
+  //start timer
+  HAL_TIM_Base_Start(&htim2);
+  /* USER CODE END TIM2_Init 2 */
+
+}
+
+/**
   * @brief USART2 Initialization Function
   * @param None
   * @retval None
@@ -487,12 +540,20 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void Logging_Task(void){
 	while(CAN_Dequeue(&temp_msg)){
-		char line[64];
+		char line[74];
+		uint32_t new_time = __HAL_TIM_GET_COUNTER(&htim2);
 
-		int len = sprintf(line, "%03lX,%d,%02X%02X%02X%02X%02X%02X%02X%02X\n",
+		if(!first_frame_found){
+			  can_start_time = new_time;
+			  first_frame_found = true;
+		  }
+
+		  uint32_t relative_time = new_time - can_start_time;
+
+		int len = sprintf(line, "%03lX,%d,%02X%02X%02X%02X%02X%02X%02X%02X\n,%03lX",
                 temp_msg.Id, temp_msg.DLC,
                 temp_msg.Data[0], temp_msg.Data[1], temp_msg.Data[2], temp_msg.Data[3],
-                temp_msg.Data[4], temp_msg.Data[5], temp_msg.Data[6], temp_msg.Data[7]);
+                temp_msg.Data[4], temp_msg.Data[5], temp_msg.Data[6], temp_msg.Data[7], relative_time);
 
 		// Add the IRQ count as a "fake" data byte to see if it's changing
 //		int len = sprintf(line, "%03lX,%d,IRQ:%lu\n",
@@ -500,7 +561,7 @@ void Logging_Task(void){
 
 		if (sd_idx + len >= 512){
 			UINT bw;
-			if (f_open(&myFile, "DATA4.TXT", FA_OPEN_ALWAYS | FA_WRITE) == FR_OK) {
+			if (f_open(&myFile, "DATA7.TXT", FA_OPEN_ALWAYS | FA_WRITE) == FR_OK) {
 				f_lseek(&myFile, myFile.fsize);
 				f_write(&myFile, sd_buffer, sd_idx, &bw);
 				f_close(&myFile);
